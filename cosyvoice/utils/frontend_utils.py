@@ -82,6 +82,9 @@ def split_paragraph(text: str, tokenize, lang="zh", token_max_n=80, token_min_n=
     if comma_split:
         pounc.extend(['，', ','])
 
+    # 强制分割的标点符号
+    force_split_pounc = ['。', '？', '！', '.', '?', '!']
+
     if text[-1] not in pounc:
         if lang == "zh":
             text += "。"
@@ -101,13 +104,25 @@ def split_paragraph(text: str, tokenize, lang="zh", token_max_n=80, token_min_n=
             else:
                 st = i + 1
 
+    # 合并段落
     final_utts = []
     cur_utt = ""
     for utt in utts:
-        if calc_utt_length(cur_utt + utt) > token_max_n and calc_utt_length(cur_utt) > token_min_n:
-            final_utts.append(cur_utt)
+        # 判断当前段落的最后一个字符是否为强制分割的标点符号
+        if utt[-1] in force_split_pounc:
+            # 如果是强制分割的标点符号，则直接分割
+            if len(cur_utt) > 0:
+                final_utts.append(cur_utt)
+            final_utts.append(utt)
             cur_utt = ""
-        cur_utt = cur_utt + utt
+        else:
+            # 否则按原有逻辑合并
+            if calc_utt_length(cur_utt + utt) > token_max_n and calc_utt_length(cur_utt) > token_min_n:
+                final_utts.append(cur_utt)
+                cur_utt = ""
+            cur_utt = cur_utt + utt
+
+    # 处理剩余的段落
     if len(cur_utt) > 0:
         if should_merge(cur_utt) and len(final_utts) != 0:
             final_utts[-1] = final_utts[-1] + cur_utt

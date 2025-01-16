@@ -22,6 +22,20 @@ from cosyvoice.cli.model import CosyVoiceModel, CosyVoice2Model
 from cosyvoice.utils.file_utils import logging
 from cosyvoice.utils.class_utils import get_model_type
 
+def add_silence(sample_rate, silence_duration=0.5):
+    """
+    生成静音段。
+    
+    :param sample_rate: 采样率。
+    :param silence_duration: 静音时长（秒），默认为 0.5 秒。
+    :return: 静音段，类型为 torch.Tensor。
+    """
+    # 计算静音段的帧数
+    silence_samples = int(silence_duration * sample_rate)
+    
+    # 创建静音段（torch.Tensor 格式）
+    silence = torch.zeros((1, silence_samples), dtype=torch.float32)  # 假设数据类型为 torch.float32
+    return silence
 
 class CosyVoice:
 
@@ -58,20 +72,28 @@ class CosyVoice:
                                 self.fp16)
         del configs
 
+
     def list_available_spks(self):
         spks = list(self.frontend.spk2info.keys())
         return spks
 
     def inference_sft(self, tts_text, spk_id, stream=False, speed=1.0, text_frontend=True):
+        texts = list(self.frontend.text_normalize(tts_text, split=True, text_frontend=text_frontend))  # 显式转换为列表
         for i in tqdm(self.frontend.text_normalize(tts_text, split=True, text_frontend=text_frontend)):
             model_input = self.frontend.frontend_sft(i, spk_id)
             start_time = time.time()
             logging.info('synthesis text {}'.format(i))
             for model_output in self.model.tts(**model_input, stream=stream, speed=speed):
+                
                 speech_len = model_output['tts_speech'].shape[1] / self.sample_rate
                 logging.info('yield speech len {}, rtf {}'.format(speech_len, (time.time() - start_time) / speech_len))
                 yield model_output
                 start_time = time.time()
+            
+            # 在每个部分生成语音后添加停顿
+            if i != texts[-1]:  # 如果不是最后一个部分，添加停顿
+                silence = add_silence(self.sample_rate, silence_duration=0.5)  # 0.5 秒静音
+                yield {'tts_speech': silence, 'sample_rate': self.sample_rate}
 
     def inference_zero_shot(self, tts_text, prompt_text, prompt_speech_16k, stream=False, speed=1.0, text_frontend=True):
         prompt_text = self.frontend.text_normalize(prompt_text, split=False, text_frontend=text_frontend)

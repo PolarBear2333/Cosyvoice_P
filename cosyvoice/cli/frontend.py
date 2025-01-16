@@ -120,6 +120,7 @@ class CosyVoiceFrontEnd:
                 text = replace_corner_mark(text)
                 text = text.replace(".", "。")
                 text = text.replace(" - ", "，")
+                text = text.replace("*", "")  # 移除星号
                 text = remove_bracket(text)
                 text = re.sub(r'[，,、]+$', '。', text)
                 texts = list(split_paragraph(text, partial(self.tokenizer.encode, allowed_special=self.allowed_special), "zh", token_max_n=80,
