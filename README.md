@@ -21,11 +21,11 @@
 
 ## 相关文档
 
-[针对每个yelid之间的停顿问题](https://github.com/PolarBear2333/Cosyvoice_P/md/YeildPause.md)
+[针对每个yelid之间的停顿问题](https://github.com/PolarBear2333/Cosyvoice_P/tree/main/md/YeildPause.md)
 
-[STF生成函数](https://github.com/PolarBear2333/Cosyvoice_P/md/CosyVoiceSTF.md)
+[STF生成函数](https://github.com/PolarBear2333/Cosyvoice_P/tree/main/md/CosyVoiceSTF.md)
 
-[文本预处理和裁剪](https://github.com/PolarBear2333/Cosyvoice_P/md/Normalizer.md)
+[文本预处理和裁剪](https://github.com/PolarBear2333/Cosyvoice_P/tree/main/md/Normalizer.md)
 
 ‍
 
